@@ -261,18 +261,6 @@ export default function App() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showAllRecent, setShowAllRecent] = useState(false);
   
-  // -- New Features States --
-  const [showClock, setShowClock] = useState(false);
-  const [showAttendance, setShowAttendance] = useState(false);
-  const [currentTime, setCurrentTime] = useState(new Date());
-
-  // Clock Update Effect
-  useEffect(() => {
-    if (!showClock) return;
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, [showClock]);
-
   const handleSaveQuizzes = async (bookId: string, questions: QuizQuestion[], type: 'content' | 'sel') => {
     if (!auth.currentUser) {
       alert("⚠️ 目前無法同步至雲端！\n請務必開啟 Firebase 匿名登入 (Anonymous Auth)。");
@@ -707,14 +695,6 @@ export default function App() {
         </div>
         
         <div className="flex items-center gap-1">
-          {showClock && (
-            <div key="digital-clock" className="px-2 py-0.5 bg-orange-50 rounded-lg border border-orange-100 flex flex-col items-center mr-1">
-              <span className="text-[10px] font-black text-orange-600 leading-none">
-                {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-              </span>
-              <span className="text-[6px] text-orange-400 font-bold uppercase tracking-widest mt-0.5">Digital Time</span>
-            </div>
-          )}
           <button 
             onClick={() => setView('study')}
             className={`p-1 rounded-full transition-colors ${view === 'study' ? 'bg-orange-100 text-orange-600' : 'text-gray-500 hover:bg-gray-100'}`}
@@ -1030,26 +1010,6 @@ export default function App() {
             <h2 className="text-xl font-bold">設定</h2>
               
               <div className="bg-white rounded-3xl p-6 shadow-sm space-y-6">
-                <div key="clock-toggle" className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-orange-100 p-2 rounded-xl text-orange-600">
-                      <Star size={20} />
-                    </div>
-                    <div>
-                      <p className="font-bold">數位時鐘顯示</p>
-                      <p className="text-xs text-gray-500">在導覽列顯示當前時間</p>
-                    </div>
-                  </div>
-                  <button 
-                    onClick={() => setShowClock(!showClock)}
-                    className={`w-12 h-6 rounded-full transition-colors relative ${showClock ? 'bg-orange-500' : 'bg-gray-200'}`}
-                  >
-                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${showClock ? 'left-7' : 'left-1'}`}></div>
-                  </button>
-                </div>
-
-                <div className="h-px bg-gray-100"></div>
-
                 <div key="parental-toggle" className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="bg-blue-100 p-2 rounded-xl text-blue-600">
@@ -1125,11 +1085,10 @@ export default function App() {
                 firebaseUser={firebaseUser}
                 onEditQuiz={(bookId, type) => setEditingQuiz({ bookId, type })}
                 onDeleteBook={handleDeleteBook}
-                showAttendance={showAttendance}
-                onToggleAttendance={() => setShowAttendance(!showAttendance)}
               />
             </motion.div>
           )}
+
         </AnimatePresence>
 
         {showAdminModal && (
@@ -1220,94 +1179,6 @@ export default function App() {
           onClose={() => setSelectedReport(null)}
         />
       )}
-    </div>
-  );
-}
-
-// --- Attendance Calculator Feature ---
-
-function AttendanceCalculator() {
-  const [count, setCount] = useState(0);
-  const [total, setTotal] = useState(30);
-  const [remarks, setRemarks] = useState('');
-
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-purple-100 rounded-xl text-purple-600">
-            <CheckCircle size={24} />
-          </div>
-          <div>
-            <h4 className="font-black text-gray-800">點名計算器</h4>
-            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Attendance Counter</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-1.5 bg-white border border-purple-200 px-4 py-2 rounded-2xl shadow-sm">
-          <span className="text-xs font-black text-purple-600">出席率：</span>
-          <span className="text-lg font-black text-gray-800">{total > 0 ? Math.round((count / total) * 100) : 0}%</span>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-1.5">
-          <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">實到人數</label>
-          <div className="flex items-center gap-2">
-            <button 
-              onClick={() => setCount(Math.max(0, count - 1))}
-              className="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 font-black"
-            >
-              -
-            </button>
-            <input 
-              type="number" 
-              value={count} 
-              onChange={e => setCount(parseInt(e.target.value) || 0)}
-              className="flex-1 h-10 rounded-xl bg-white border border-gray-200 text-center font-black text-purple-600 focus:border-purple-400 outline-none"
-            />
-            <button 
-              onClick={() => setCount(count + 1)}
-              className="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 font-black"
-            >
-              +
-            </button>
-          </div>
-        </div>
-
-        <div className="space-y-1.5">
-          <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">應到總數</label>
-          <input 
-            type="number" 
-            value={total} 
-            onChange={e => setTotal(parseInt(e.target.value) || 0)}
-            className="w-full h-10 rounded-xl bg-white border border-gray-200 text-center font-black text-gray-700 focus:border-purple-400 outline-none"
-          />
-        </div>
-      </div>
-
-      <div className="space-y-1.5">
-        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">缺席備註</label>
-        <textarea 
-          placeholder="輸入缺席名單或其他備註..."
-          value={remarks}
-          onChange={e => setRemarks(e.target.value)}
-          className="w-full p-4 rounded-2xl bg-white border border-gray-200 text-sm focus:border-purple-400 outline-none resize-none h-20"
-        />
-      </div>
-
-      <div className="flex justify-end gap-2">
-        <button 
-          onClick={() => { setCount(0); setRemarks(''); }}
-          className="px-4 py-2 text-xs font-bold text-gray-400 hover:text-gray-600 transition-colors"
-        >
-          重新歸零
-        </button>
-        <button 
-          className="bg-purple-600 text-white px-6 py-2 rounded-xl text-xs font-black shadow-lg shadow-purple-100 hover:bg-purple-700 transition-all flex items-center gap-2"
-        >
-          <Save size={14} /> 儲存目前數據
-        </button>
-      </div>
     </div>
   );
 }
@@ -2654,7 +2525,7 @@ function QuizModal({ type, questions, bookTitle, selIndicators, onClose, onPass 
   );
 }
 
-function AdminView({ books, selIndicators, onBack, authError, isAdmin, firebaseUser, onEditQuiz, onDeleteBook, showAttendance, onToggleAttendance }: { 
+function AdminView({ books, selIndicators, onBack, authError, isAdmin, firebaseUser, onEditQuiz, onDeleteBook }: { 
   books: BookData[], 
   selIndicators: SELIndicator[],
   onBack: () => void,
@@ -2662,9 +2533,7 @@ function AdminView({ books, selIndicators, onBack, authError, isAdmin, firebaseU
   isAdmin: boolean,
   firebaseUser: FirebaseUser | null,
   onEditQuiz: (bookId: string, type: 'content' | 'sel') => void,
-  onDeleteBook: (id: string, title: string) => void,
-  showAttendance?: boolean,
-  onToggleAttendance?: () => void
+  onDeleteBook: (id: string, title: string) => void
 }) {
   const [adminTab, setAdminTab] = useState<'books' | 'sel'>('books');
   const [editingBook, setEditingBook] = useState<Partial<BookData> | null>(null);
@@ -2922,13 +2791,6 @@ function AdminView({ books, selIndicators, onBack, authError, isAdmin, firebaseU
           {adminTab === 'books' ? (
             <>
               <button 
-                onClick={onToggleAttendance}
-                className={`px-4 py-2.5 rounded-xl flex items-center gap-2 font-bold transition-all text-sm border-2 ${showAttendance ? 'bg-purple-600 text-white border-purple-600' : 'bg-purple-50 text-purple-600 border-purple-200 hover:bg-purple-100'}`}
-                title="點名計算器"
-              >
-                <CheckCircle size={18} /> 點名計算器
-              </button>
-              <button 
                 onClick={handleAddBook}
                 className="bg-orange-500 text-white px-4 py-2.5 rounded-xl flex items-center gap-2 font-bold shadow-lg shadow-orange-100 hover:bg-orange-600 transition-all text-sm"
               >
@@ -2973,20 +2835,6 @@ function AdminView({ books, selIndicators, onBack, authError, isAdmin, firebaseU
       </div>
 
       <div className="bg-white rounded-3xl border-2 border-gray-100 overflow-hidden shadow-sm">
-        <AnimatePresence mode="wait">
-          {showAttendance ? (
-            <motion.div 
-              key="attendance-calculator"
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="bg-purple-50/50 p-6 border-b-2 border-gray-100"
-            >
-              <AttendanceCalculator />
-            </motion.div>
-          ) : null}
-        </AnimatePresence>
-
         {adminTab === 'books' ? (
           <div className="divide-y-2 divide-gray-50">
             {books.map(book => (
