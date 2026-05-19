@@ -167,6 +167,42 @@ const INITIAL_SEL_INDICATORS: SELIndicator[] = [
 
 // --- Constants ---
 
+const MOCK_BOOKS: BookData[] = [
+  {
+    id: 'mock-1',
+    title: '智慧小兔子的森林冒險',
+    author: '森林智者',
+    description: '這是一個關於智慧與解決問題的故事。小兔子如何運用他的聰明才智，解決森林裡的各種難題？',
+    coverImageUrl: 'https://images.unsplash.com/photo-1591000000000-000000000000?auto=format&fit=crop&w=400&q=80',
+    type: 'text',
+    fileData: '很久很久以前，在一個美麗的森林裡，住著一隻聰明的小兔子...',
+    keywords: ['智慧', '勇氣', '冒險', '解決問題'],
+    createdAt: Date.now()
+  },
+  {
+    id: 'mock-2',
+    title: '分享的快樂：小熊與蜂蜜',
+    author: '溫馨博士',
+    description: '小熊發現了一大罐蜂蜜，他該獨自享用還是與好朋友分享呢？一起學習分享的真諦。',
+    coverImageUrl: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&w=400&q=80',
+    type: 'text',
+    fileData: '陽光燦爛的早晨，小熊在樹下發現了一罐金黃色的蜂蜜...',
+    keywords: ['分享', '友誼', '快樂', '社交'],
+    createdAt: Date.now() - 100000
+  },
+  {
+    id: 'mock-3',
+    title: '勇敢說出心裡話',
+    author: '心理導師',
+    description: '當感到委屈或難過時，該如何勇敢表達自己的感受？這本書是 SEL 情緒教育的最佳教材。',
+    coverImageUrl: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=400&q=80',
+    type: 'text',
+    fileData: '小力今天在學校遇到了一件不高興的事，但他不知道該怎麼開口...',
+    keywords: ['情緒', '表達', '溝通', '自信'],
+    createdAt: Date.now() - 200000
+  }
+];
+
 const ADMIN_PASSWORD = 'admin123';
 const ADMIN_EMAIL = 'doora0622@gmail.com';
 const ADMIN_UID = 'bqLmbZ5rRNUmJxSpcrx6ch8D1Ep1';
@@ -395,22 +431,33 @@ export default function App() {
     // Books Listener (Public)
     const booksQuery = query(collection(db, 'kidsbook-GitHub-to-Firebase'), orderBy('createdAt', 'desc'));
     const unsubscribeBooks = onSnapshot(booksQuery, (snapshot) => {
-      const booksList: BookData[] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BookData));
-      setBooks(booksList);
+      if (snapshot.empty) {
+        console.log("Firestore books collection is empty, using MOCK_BOOKS");
+        setBooks(MOCK_BOOKS);
+      } else {
+        const booksList: BookData[] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BookData));
+        setBooks(booksList);
+      }
     }, (error) => {
-      console.warn("Public books listener error (may be fine if not deployed):", error);
+      console.warn("Public books listener error (using MOCK_BOOKS fallback):", error);
+      setBooks(MOCK_BOOKS);
     });
 
     // SEL Indicators Listener (Public)
     const selQuery = query(collection(db, 'sel_indicators'));
     const unsubscribeSel = onSnapshot(selQuery, (snapshot) => {
-      const selList: SELIndicator[] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as SELIndicator));
-      // Sort in client to avoid requiring composite indexes
-      selList.sort((a, b) => (a.code || '').localeCompare(b.code || ''));
-      console.log("SEL Indicators updated:", selList.length, "items");
-      setSelIndicators(selList);
+      if (snapshot.empty) {
+        console.log("Firestore SEL indicators empty, using INITIAL_SEL_INDICATORS");
+        setSelIndicators(INITIAL_SEL_INDICATORS);
+      } else {
+        const selList: SELIndicator[] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as SELIndicator));
+        selList.sort((a, b) => (a.code || '').localeCompare(b.code || ''));
+        console.log("SEL Indicators updated:", selList.length, "items");
+        setSelIndicators(selList);
+      }
     }, (error) => {
-      console.error("Critical: Public SEL indicators listener error:", error);
+      console.error("Public SEL indicators listener error (using fallback):", error);
+      setSelIndicators(INITIAL_SEL_INDICATORS);
     });
 
     return () => {
@@ -655,9 +702,29 @@ export default function App() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-orange-50 flex flex-col items-center justify-center">
-        <Loader2 className="animate-spin text-orange-500 mb-4" size={48} />
-        <p className="font-bold text-orange-600">小博士正在準備圖書中...</p>
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 flex flex-col items-center justify-center p-6 text-center">
+        <motion.div
+          animate={{ 
+            rotate: [0, 10, -10, 0],
+            scale: [1, 1.1, 1]
+          }}
+          transition={{ repeat: Infinity, duration: 2 }}
+          className="bg-white p-6 rounded-3xl shadow-2xl mb-8 border-4 border-orange-200"
+        >
+          <Book className="text-orange-500" size={64} />
+        </motion.div>
+        
+        <div className="space-y-4">
+          <h2 className="text-2xl font-black text-orange-600 tracking-tight">文心童書樂園</h2>
+          <div className="flex items-center gap-2 justify-center">
+            <Loader2 className="animate-spin text-orange-400" size={24} />
+            <p className="font-bold text-gray-500">正在為您翻開精彩章節...</p>
+          </div>
+          <p className="text-xs text-gray-400 max-w-xs mx-auto">
+            正在與雲端同步繪本與測驗資料，請稍候片刻。
+            <br />若長時間無反應，請重新整理網頁。
+          </p>
+        </div>
       </div>
     );
   }
@@ -720,7 +787,7 @@ export default function App() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-md mx-auto px-3 pb-16 md:pb-4">
+      <main className="max-w-lg mx-auto px-4 pb-12 md:pb-4">
         <AnimatePresence mode="wait">
           {view === 'home' && (
             <motion.div 
@@ -2986,24 +3053,24 @@ function SELEditor({ indicator, onSave, onCancel }: {
   };
 
   return (
-    <div key="sel-editor-modal" className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-6">
+    <div key="sel-editor-modal" className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
       <motion.div 
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-5"
+        className="bg-white rounded-2xl p-5 max-w-md w-full shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto"
       >
         <div className="flex items-center justify-between">
-          <h3 className="text-xl font-black text-blue-600">🎯 {indicator.id ? '編輯' : '新增'} SEL 指標</h3>
-          <button onClick={onCancel} className="text-gray-400 hover:bg-gray-100 p-2 rounded-full"><X size={24} /></button>
+          <h3 className="text-lg font-black text-blue-600">🎯 {indicator.id ? '編輯' : '新增'} SEL 指標</h3>
+          <button onClick={onCancel} className="text-gray-400 hover:bg-gray-100 p-1.5 rounded-full"><X size={20} /></button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-gray-600 ml-2">維度名稱</label>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-gray-600 ml-1">維度名稱</label>
             <select 
               value={formData.dimension}
               onChange={e => setFormData({ ...formData, dimension: e.target.value })}
-              className="w-full px-5 py-3 rounded-2xl bg-gray-50 border-2 border-transparent focus:border-blue-400 outline-none"
+              className="w-full px-4 py-2.5 rounded-xl bg-gray-50 border-2 border-transparent focus:border-blue-400 outline-none text-sm"
             >
               <option>第一維度：自我覺察</option>
               <option>第二維度：自我管理</option>
@@ -3013,58 +3080,58 @@ function SELEditor({ indicator, onSave, onCancel }: {
             </select>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-gray-600 ml-2">編號</label>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-gray-600 ml-1">編號</label>
               <input 
                 required
                 type="text" 
                 value={formData.code}
                 onChange={e => setFormData({ ...formData, code: e.target.value })}
                 placeholder="例如: 1-1-1"
-                className="w-full px-5 py-3 rounded-2xl bg-gray-50 border-2 border-transparent focus:border-blue-400 outline-none"
+                className="w-full px-4 py-2.5 rounded-xl bg-gray-50 border-2 border-transparent focus:border-blue-400 outline-none text-sm"
               />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-gray-600 ml-2">建議權重</label>
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-gray-600 ml-1">建議權重</label>
               <input 
                 required
                 type="text" 
                 value={formData.weight}
                 onChange={e => setFormData({ ...formData, weight: e.target.value })}
                 placeholder="例如: 7%"
-                className="w-full px-5 py-3 rounded-2xl bg-gray-50 border-2 border-transparent focus:border-blue-400 outline-none font-mono"
+                className="w-full px-4 py-2.5 rounded-xl bg-gray-50 border-2 border-transparent focus:border-blue-400 outline-none font-mono text-sm"
               />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-gray-600 ml-2">評量細項 (Sub-domains)</label>
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-gray-600 ml-1">評量細項 (Sub-domains)</label>
             <input 
               required
               type="text" 
               value={formData.subDomain}
               onChange={e => setFormData({ ...formData, subDomain: e.target.value })}
               placeholder="例如: 情緒顆粒度 (命名)"
-              className="w-full px-5 py-3 rounded-2xl bg-gray-50 border-2 border-transparent focus:border-blue-400 outline-none"
+              className="w-full px-4 py-2.5 rounded-xl bg-gray-50 border-2 border-transparent focus:border-blue-400 outline-none text-sm"
             />
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-gray-600 ml-2">測驗重點描述 (行為指標)</label>
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-gray-600 ml-1">測驗重點描述 (行為指標)</label>
             <textarea 
               required
-              rows={3}
+              rows={2}
               value={formData.description}
               onChange={e => setFormData({ ...formData, description: e.target.value })}
               placeholder="請輸入具體的行為指標描述..."
-              className="w-full px-5 py-3 rounded-2xl bg-gray-50 border-2 border-transparent focus:border-blue-400 outline-none resize-none"
+              className="w-full px-4 py-2.5 rounded-xl bg-gray-50 border-2 border-transparent focus:border-blue-400 outline-none resize-none text-sm"
             />
           </div>
 
           <button 
             type="submit"
-            className="w-full py-4 rounded-2xl bg-blue-600 text-white font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all active:scale-95"
+            className="w-full py-3 rounded-xl bg-blue-600 text-white font-bold shadow-lg shadow-blue-50 hover:bg-blue-700 transition-all active:scale-95 text-sm"
           >
             儲存指標設定
           </button>
