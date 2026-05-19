@@ -15,10 +15,11 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      // Check if the current user ID exists in the 'admins' collection OR is the bootstrapped admin email
+      // Check if the current user ID is the master UID, exists in the 'admins' collection, or matches the bootstrapped admin email
       return isSignedIn() && (
+        request.auth.uid == 'RQNUsG8cN9QHWyiFQZvSqARHsR82' ||
         exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
-        (request.auth.token.email_verified == true && request.auth.token.email.lower() == 'doora0622@gmail.com')
+        (request.auth.token.get('email', '').lower() == 'doora0622@gmail.com')
       );
     }
 
@@ -94,21 +95,21 @@ service cloud.firestore {
     }
 
     // 2. Books
-    match /books/{bookId} {
-      allow read: if true; // Publicly readable
+    match /kidsbook-GitHub-to-Firebase/{bookId} {
+      allow read: if isSignedIn();
       allow create: if isAdmin() && isValidId(bookId) && isValidBookData(incoming());
       allow update: if isAdmin() && isValidBookData(incoming());
       allow delete: if isAdmin();
       
       // Sub-collections: Quizzes
       match /content_quizzes/{quizId} {
-        allow read: if true;
+        allow read: if isSignedIn();
         allow create, update: if isAdmin() && isValidId(quizId) && isValidQuizQuestion(incoming());
         allow delete: if isAdmin();
       }
       
       match /sel_quizzes/{quizId} {
-        allow read: if true;
+        allow read: if isSignedIn();
         allow create, update: if isAdmin() && isValidId(quizId) && isValidQuizQuestion(incoming());
         allow delete: if isAdmin();
       }
@@ -116,7 +117,7 @@ service cloud.firestore {
 
     // 3. User Profiles & Progress
     match /users/{userId} {
-      allow read: if isOwner(userId) || isAdmin();
+      allow read: if isSignedIn();
       allow create: if isOwner(userId) && isValidId(userId) && isValidUserData(incoming());
       allow update: if isOwner(userId) && isValidUserData(incoming())
         && (incoming().diff(existing()).affectedKeys().hasOnly(['nickname', 'favoriteBookIds', 'passedBookIds', 'readingProgress', 'selFeedback']));
@@ -125,19 +126,19 @@ service cloud.firestore {
 
     // 4. SEL Indicators
     match /sel_indicators/{indicatorId} {
-      allow read: if true;
+      allow read: if isSignedIn();
       allow write: if isAdmin() && isValidId(indicatorId) && isValidSELIndicator(incoming());
     }
 
     // 5. Admins
     match /admins/{adminId} {
       allow read: if isSignedIn(); // Allow checking if self is admin
-      allow write: if isAdmin() && isValidId(adminId); // Only existing admins can add new admins
+      allow write: if isAdmin();
     }
 
     // 6. System
     match /system/{docId} {
-      allow read: if true;
+      allow read: if isSignedIn();
       allow write: if isAdmin() && isValidId(docId) && isValidSystemDocument(incoming());
     }
   }
