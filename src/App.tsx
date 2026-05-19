@@ -2213,15 +2213,14 @@ function QuizModal({ type, questions, bookTitle, selIndicators, onClose, onPass 
               <div className="flex flex-col gap-1.5 pt-3 border-t border-gray-100">
                 <button 
                   onClick={() => onPass()} 
-                  disabled={res.accuracy < 80}
                   className={`w-full py-2.5 rounded-lg font-black text-sm shadow-md flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${
                     res.accuracy >= 80 
                     ? 'bg-green-500 text-white shadow-green-100 hover:bg-green-600' 
-                    : 'bg-gray-100 text-gray-400 shadow-none cursor-not-allowed'
+                    : 'bg-orange-500 text-white shadow-orange-100 hover:bg-orange-600'
                   }`}
                 >
                   <Award size={18} />
-                  領取榮譽勳章
+                  {res.accuracy >= 80 ? '領取榮譽勳章' : '領取參與獎勵'}
                 </button>
                 <div className="grid grid-cols-2 gap-1.5">
                   <button 
