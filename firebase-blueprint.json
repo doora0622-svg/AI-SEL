@@ -1,0 +1,108 @@
+{
+  "entities": {
+    "BookData": {
+      "title": "BookData",
+      "description": "Represents a book in the library",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "author": { "type": "string" },
+        "description": { "type": "string" },
+        "coverImageUrl": { "type": "string" },
+        "type": { "type": "string", "enum": ["pdf", "youtube", "video", "text"] },
+        "fileData": { "type": "string" },
+        "keywords": { "type": "array", "items": { "type": "string" } },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["title", "author", "type", "fileData", "createdAt"]
+    },
+    "QuizQuestion": {
+      "title": "QuizQuestion",
+      "description": "A single quiz question for a book",
+      "type": "object",
+      "properties": {
+        "question": { "type": "string" },
+        "options": { "type": "array", "items": { "type": "string" } },
+        "correctAnswer": { "type": "number" },
+        "hint": { "type": "string" },
+        "type": { "type": "string", "enum": ["content", "sel"] },
+        "selIndicatorId": { "type": "string" }
+      },
+      "required": ["question", "options", "correctAnswer", "type"]
+    },
+    "UserData": {
+      "title": "UserData",
+      "description": "Information about a user",
+      "type": "object",
+      "properties": {
+        "nickname": { "type": "string" },
+        "favoriteBookIds": { "type": "array", "items": { "type": "string" } },
+        "passedBookIds": { "type": "array", "items": { "type": "string" } },
+        "readingProgress": { "type": "object" },
+        "selFeedback": { "type": "object" }
+      },
+      "required": ["nickname"]
+    },
+    "SELIndicator": {
+      "title": "SELIndicator",
+      "description": "Social Emotional Learning evaluation indicator",
+      "type": "object",
+      "properties": {
+        "dimension": { "type": "string" },
+        "code": { "type": "string" },
+        "subDomain": { "type": "string" },
+        "description": { "type": "string" },
+        "weight": { "type": "string" }
+      },
+      "required": ["dimension", "code", "subDomain", "description", "weight"]
+    },
+    "SystemDocument": {
+      "title": "SystemDocument",
+      "description": "System-wide configuration or generated documents",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "content": { "type": "string" },
+        "updatedAt": { "type": "object", "format": "timestamp" }
+      },
+      "required": ["name", "content", "updatedAt"]
+    },
+    "Admin": {
+      "title": "Admin",
+      "description": "Admin status marker",
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  "firestore": {
+    "/books/{bookId}": {
+      "schema": "BookData",
+      "description": "List of available books"
+    },
+    "/books/{bookId}/content_quizzes/{quizId}": {
+      "schema": "QuizQuestion",
+      "description": "Content comprehension quizzes for a book"
+    },
+    "/books/{bookId}/sel_quizzes/{quizId}": {
+      "schema": "QuizQuestion",
+      "description": "SEL situational quizzes for a book"
+    },
+    "/users/{userId}": {
+      "schema": "UserData",
+      "description": "User profiles and progress"
+    },
+    "/sel_indicators/{indicatorId}": {
+      "schema": "SELIndicator",
+      "description": "Standards for SEL evaluation"
+    },
+    "/admins/{adminId}": {
+      "schema": "Admin",
+      "description": "Users with administrative privileges"
+    },
+    "/system/{docId}": {
+      "schema": "SystemDocument",
+      "description": "System-level documents"
+    }
+  }
+}

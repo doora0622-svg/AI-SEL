@@ -1,0 +1,144 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // -------------------------------------------------------------------------
+    // GLOBAL HELPERS
+    // -------------------------------------------------------------------------
+    
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      // Check if the current user ID exists in the 'admins' collection OR is the bootstrapped admin email
+      return isSignedIn() && (
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        (request.auth.token.email_verified == true && request.auth.token.email.lower() == 'doora0622@gmail.com')
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // -------------------------------------------------------------------------
+    // ENTITY VALIDATION HELPERS
+    // -------------------------------------------------------------------------
+
+    function isValidBookData(data) {
+      return data.keys().hasAll(['title', 'author', 'type', 'fileData', 'createdAt'])
+        && data.title is string && data.title.size() <= 200
+        && data.author is string && data.author.size() <= 100
+        && data.type in ['pdf', 'youtube', 'video', 'text']
+        && data.fileData is string && data.fileData.size() <= 1048576 // 1MB limit for text/base64
+        && (data.get('description', '') is string && data.get('description', '').size() <= 2000)
+        && (data.get('coverImageUrl', '') is string && data.get('coverImageUrl', '').size() <= 500)
+        && (data.get('keywords', []) is list && data.get('keywords', []).size() <= 20)
+        && data.createdAt is int;
+    }
+
+    function isValidQuizQuestion(data) {
+      return data.keys().hasAll(['question', 'options', 'correctAnswer', 'type'])
+        && data.question is string && data.question.size() <= 500
+        && data.options is list && data.options.size() >= 2 && data.options.size() <= 10
+        && data.correctAnswer is int && data.correctAnswer >= 0 && data.correctAnswer < data.options.size()
+        && data.type in ['content', 'sel']
+        && (data.get('selIndicatorId', '') is string && data.get('selIndicatorId', '').size() <= 100);
+    }
+
+    function isValidUserData(data) {
+      return data.keys().hasAll(['nickname'])
+        && data.nickname is string && data.nickname.size() <= 50
+        && (data.get('favoriteBookIds', []) is list && data.get('favoriteBookIds', []).size() <= 100)
+        && (data.get('passedBookIds', []) is list && data.get('passedBookIds', []).size() <= 1000)
+        && (data.get('readingProgress', {}) is map)
+        && (data.get('selFeedback', {}) is map);
+    }
+
+    function isValidSELIndicator(data) {
+      return data.keys().hasAll(['dimension', 'code', 'subDomain', 'description', 'weight'])
+        && data.dimension is string && data.dimension.size() <= 100
+        && data.code is string && data.code.size() <= 20
+        && data.subDomain is string && data.subDomain.size() <= 100
+        && data.description is string && data.description.size() <= 500
+        && data.weight is string && data.weight.size() <= 10;
+    }
+
+    function isValidSystemDocument(data) {
+      return data.keys().hasAll(['name', 'content', 'updatedAt'])
+        && data.name is string && data.name.size() <= 100
+        && data.content is string && data.content.size() <= 10000
+        && data.updatedAt is timestamp;
+    }
+
+    // -------------------------------------------------------------------------
+    // ACCESS CONTROL RULES
+    // -------------------------------------------------------------------------
+
+    // 1. Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 2. Books
+    match /books/{bookId} {
+      allow read: if true; // Publicly readable
+      allow create: if isAdmin() && isValidId(bookId) && isValidBookData(incoming());
+      allow update: if isAdmin() && isValidBookData(incoming());
+      allow delete: if isAdmin();
+      
+      // Sub-collections: Quizzes
+      match /content_quizzes/{quizId} {
+        allow read: if true;
+        allow create, update: if isAdmin() && isValidId(quizId) && isValidQuizQuestion(incoming());
+        allow delete: if isAdmin();
+      }
+      
+      match /sel_quizzes/{quizId} {
+        allow read: if true;
+        allow create, update: if isAdmin() && isValidId(quizId) && isValidQuizQuestion(incoming());
+        allow delete: if isAdmin();
+      }
+    }
+
+    // 3. User Profiles & Progress
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && isValidId(userId) && isValidUserData(incoming());
+      allow update: if isOwner(userId) && isValidUserData(incoming())
+        && (incoming().diff(existing()).affectedKeys().hasOnly(['nickname', 'favoriteBookIds', 'passedBookIds', 'readingProgress', 'selFeedback']));
+      allow delete: if isAdmin();
+    }
+
+    // 4. SEL Indicators
+    match /sel_indicators/{indicatorId} {
+      allow read: if true;
+      allow write: if isAdmin() && isValidId(indicatorId) && isValidSELIndicator(incoming());
+    }
+
+    // 5. Admins
+    match /admins/{adminId} {
+      allow read: if isSignedIn(); // Allow checking if self is admin
+      allow write: if isAdmin() && isValidId(adminId); // Only existing admins can add new admins
+    }
+
+    // 6. System
+    match /system/{docId} {
+      allow read: if true;
+      allow write: if isAdmin() && isValidId(docId) && isValidSystemDocument(incoming());
+    }
+  }
+}
