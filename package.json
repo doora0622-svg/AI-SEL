@@ -1,6 +1,7 @@
 {
   "name": "react-example",
   "private": true,
+  "homepage": "https://doora0622.github.io/kidsbook-github-to-firebase/",
   "version": "0.0.0",
   "type": "module",
   "scripts": {

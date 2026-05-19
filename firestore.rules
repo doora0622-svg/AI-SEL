@@ -94,7 +94,7 @@ service cloud.firestore {
     }
 
     // 2. Books
-    match /books/{bookId} {
+    match /kidsbook-GitHub-to-Firebase/{bookId} {
       allow read: if true; // Publicly readable
       allow create: if isAdmin() && isValidId(bookId) && isValidBookData(incoming());
       allow update: if isAdmin() && isValidBookData(incoming());

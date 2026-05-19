@@ -267,7 +267,7 @@ export default function App() {
       return;
     }
     setIsProcessing(true);
-    const collectionPath = type === 'content' ? `books/${bookId}/content_quizzes` : `books/${bookId}/sel_quizzes`;
+    const collectionPath = type === 'content' ? `kidsbook-GitHub-to-Firebase/${bookId}/content_quizzes` : `kidsbook-GitHub-to-Firebase/${bookId}/sel_quizzes`;
     try {
       const quizzesRef = collection(db, collectionPath);
       // Delete old quizzes first
@@ -302,10 +302,10 @@ export default function App() {
     setDeleteConfirm(null);
     setIsProcessing(true);
     try {
-      await deleteDoc(doc(db, 'books', id));
+      await deleteDoc(doc(db, 'kidsbook-GitHub-to-Firebase', id));
       alert("✅ 圖書已刪除");
     } catch (error: any) {
-      handleFirestoreError(error, OperationType.DELETE, `books/${id}`);
+      handleFirestoreError(error, OperationType.DELETE, `kidsbook-GitHub-to-Firebase/${id}`);
       alert("❌ 刪除失敗：權限不足");
     } finally {
       setIsProcessing(false);
@@ -393,7 +393,7 @@ export default function App() {
   // Data Listeners (Public)
   useEffect(() => {
     // Books Listener (Public)
-    const booksQuery = query(collection(db, 'books'), orderBy('createdAt', 'desc'));
+    const booksQuery = query(collection(db, 'kidsbook-GitHub-to-Firebase'), orderBy('createdAt', 'desc'));
     const unsubscribeBooks = onSnapshot(booksQuery, (snapshot) => {
       const booksList: BookData[] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BookData));
       setBooks(booksList);
@@ -435,13 +435,13 @@ export default function App() {
     if (!selectedBook) return;
     
     // Content Quizzes
-    const unsubscribeContent = onSnapshot(collection(db, `books/${selectedBook.id}/content_quizzes`), (snapshot) => {
+    const unsubscribeContent = onSnapshot(collection(db, `kidsbook-GitHub-to-Firebase/${selectedBook.id}/content_quizzes`), (snapshot) => {
       const list = snapshot.docs.map(doc => doc.data() as QuizQuestion);
       setContentQuizzes(prev => ({ ...prev, [selectedBook.id]: list }));
     });
 
     // SEL Quizzes
-    const unsubscribeSEL = onSnapshot(collection(db, `books/${selectedBook.id}/sel_quizzes`), (snapshot) => {
+    const unsubscribeSEL = onSnapshot(collection(db, `kidsbook-GitHub-to-Firebase/${selectedBook.id}/sel_quizzes`), (snapshot) => {
       const list = snapshot.docs.map(doc => doc.data() as QuizQuestion);
       setSelQuizzes(prev => ({ ...prev, [selectedBook.id]: list }));
     });
@@ -689,41 +689,41 @@ export default function App() {
       </div>
 
       {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-30 px-3 py-1.5 flex items-center justify-between">
-        <div className="flex items-center gap-2 cursor-pointer" onClick={() => setView('home')}>
-          <div className="bg-orange-400 p-1.5 rounded-lg">
-            <Book className="text-white" size={20} />
+      <header className="bg-white shadow-sm sticky top-0 z-30 px-2 py-1 flex items-center justify-between">
+        <div className="flex items-center gap-1.5 cursor-pointer" onClick={() => setView('home')}>
+          <div className="bg-orange-400 p-1 rounded-lg">
+            <Book className="text-white" size={18} />
           </div>
-          <h1 className="text-lg font-bold text-orange-600 tracking-tight">文心童書樂園</h1>
+          <h1 className="text-sm font-bold text-orange-600 tracking-tight">文心童書樂園</h1>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <button 
             onClick={() => setView('study')}
-            className={`p-1.5 rounded-full transition-colors ${view === 'study' ? 'bg-orange-100 text-orange-600' : 'text-gray-500 hover:bg-gray-100'}`}
+            className={`p-1 rounded-full transition-colors ${view === 'study' ? 'bg-orange-100 text-orange-600' : 'text-gray-500 hover:bg-gray-100'}`}
           >
-            <Star size={20} />
+            <Star size={16} />
           </button>
           <button 
             onClick={() => setView('settings')}
-            className={`p-1.5 rounded-full transition-colors ${view === 'settings' ? 'bg-orange-100 text-orange-600' : 'text-gray-500 hover:bg-gray-100'}`}
+            className={`p-1 rounded-full transition-colors ${view === 'settings' ? 'bg-orange-100 text-orange-600' : 'text-gray-500 hover:bg-gray-100'}`}
           >
-            <Settings size={20} />
+            <Settings size={16} />
           </button>
-          <div className="h-6 w-px bg-gray-200 mx-1"></div>
-          <div className="flex items-center gap-1.5 bg-gray-50 px-2.5 py-1 rounded-full border border-gray-100">
+          <div className="h-4 w-px bg-gray-200 mx-0.5"></div>
+          <div className="flex items-center gap-1 bg-gray-50 px-1.5 py-0.5 rounded-full border border-gray-100">
             {firebaseUser ? (
-              <img src={firebaseUser.photoURL || undefined} alt="" className="w-4 h-4 rounded-full" />
+              <img src={firebaseUser.photoURL || undefined} alt="" className="w-3 h-3 rounded-full" />
             ) : (
-              <User size={16} className="text-orange-400" />
+              <User size={12} className="text-orange-400" />
             )}
-            <span className="text-xs font-medium">{currentUser?.nickname}</span>
+            <span className="text-[9px] font-medium">{currentUser?.nickname}</span>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-3xl mx-auto px-4 pb-20 md:pb-8">
+      <main className="max-w-md mx-auto px-3 pb-16 md:pb-4">
         <AnimatePresence mode="wait">
           {view === 'home' && (
             <motion.div 
@@ -731,7 +731,7 @@ export default function App() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="space-y-6"
+              className="space-y-4"
             >
               {/* Daily Recommendation */}
               {dailyRecommendation && (
@@ -767,7 +767,7 @@ export default function App() {
               )}
 
               {/* Quick Access */}
-              <section className="grid grid-cols-2 gap-3 relative">
+              <section className="grid grid-cols-2 gap-2 relative">
                 {/* Hidden Fullscreen Button */}
                 <button 
                   onClick={() => {
@@ -786,21 +786,21 @@ export default function App() {
                 </button>
                 <button 
                   onClick={() => setView('library')}
-                  className="bg-blue-50 p-3 rounded-2xl flex flex-col items-center gap-1.5 hover:bg-blue-100 transition-colors border border-blue-100/50"
+                  className="bg-blue-50 p-2 rounded-2xl flex flex-col items-center gap-0.5 hover:bg-blue-100 transition-colors border border-blue-100/50"
                 >
-                  <div className="bg-blue-400 p-2 rounded-lg text-white">
-                    <Search size={20} />
+                  <div className="bg-blue-400 p-1.5 rounded-lg text-white">
+                    <Search size={16} />
                   </div>
-                  <span className="font-bold text-blue-700 text-xs">探索書庫</span>
+                  <span className="font-bold text-blue-700 text-[10px]">探索書庫</span>
                 </button>
                 <button 
                   onClick={() => setView('study')}
-                  className="bg-purple-50 p-3 rounded-2xl flex flex-col items-center gap-1.5 hover:bg-purple-100 transition-colors border border-purple-100/50"
+                  className="bg-purple-50 p-2 rounded-2xl flex flex-col items-center gap-0.5 hover:bg-purple-100 transition-colors border border-purple-100/50"
                 >
-                  <div className="bg-purple-400 p-2 rounded-lg text-white">
-                    <Award size={20} />
+                  <div className="bg-purple-400 p-1.5 rounded-lg text-white">
+                    <Award size={16} />
                   </div>
-                  <span className="font-bold text-purple-700 text-xs">我的成就</span>
+                  <span className="font-bold text-purple-700 text-[10px]">我的成就</span>
                 </button>
               </section>
 
@@ -1191,35 +1191,35 @@ function LoginView({ onLogin, isProcessing }: { onLogin: (type: 'guest' | 'admin
   };
 
   return (
-    <div className="min-h-screen bg-orange-400 flex items-center justify-center p-6 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]">
+    <div className="min-h-screen bg-orange-400 flex items-center justify-center p-4 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]">
       <motion.div 
         layout
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-white rounded-3xl p-6 shadow-2xl space-y-5 border-4 border-orange-100"
+        className="bg-white rounded-xl p-3 shadow-xl space-y-2 border-2 border-orange-100 max-w-[280px] w-full mx-auto"
       >
-        <div className="space-y-1 text-center">
-          <div className="bg-orange-100 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto shadow-inner mb-2">
-            <Book className="text-orange-500" size={24} />
+        <div className="space-y-0 text-center">
+          <div className="bg-orange-100 w-8 h-8 rounded-lg flex items-center justify-center mx-auto shadow-inner mb-0.5">
+            <Book className="text-orange-500" size={16} />
           </div>
-          <h1 className="text-xl font-black text-orange-600 tracking-tight">文心童書樂園</h1>
-          <p className="text-gray-400 font-medium tracking-wide text-[10px]">✨ 入口奇幻選擇 ✨</p>
+          <h1 className="text-sm font-black text-orange-600 tracking-tight">文心童書樂園</h1>
+          <p className="text-gray-400 font-medium tracking-wide text-[7px]">✨ 入口奇幻選擇 ✨</p>
         </div>
 
         {mode === 'selection' && (
-          <div className="grid grid-cols-1 gap-3">
+          <div className="grid grid-cols-1 gap-1.5">
             <button 
               onClick={() => setMode('guest')}
               disabled={isProcessing}
-              className="group relative overflow-hidden p-4 rounded-[28px] bg-white border-4 border-orange-50 hover:border-orange-400 transition-all text-left shadow-xl hover:shadow-orange-100 disabled:opacity-50"
+              className="group relative overflow-hidden p-2.5 rounded-[16px] bg-white border border-orange-50 hover:border-orange-400 transition-all text-left shadow-md hover:shadow-orange-50 disabled:opacity-50"
             >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center text-orange-500 group-hover:scale-110 transition-transform">
-                  <User size={24} />
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center text-orange-500 group-hover:scale-110 transition-transform flex-shrink-0">
+                  <User size={16} />
                 </div>
                 <div>
-                  <h2 className="text-lg font-black text-gray-800">一般登入</h2>
-                  <p className="text-xs text-gray-400 font-medium font-sans">免帳號，直接開始奇幻旅程</p>
+                  <h2 className="text-[13px] font-black text-gray-800 leading-tight">一般登入</h2>
+                  <p className="text-[8px] text-gray-400 font-medium font-sans">直接開始旅程</p>
                 </div>
               </div>
             </button>
@@ -1227,15 +1227,15 @@ function LoginView({ onLogin, isProcessing }: { onLogin: (type: 'guest' | 'admin
             <button 
               onClick={() => onLogin('google')}
               disabled={isProcessing}
-              className="group relative overflow-hidden p-4 rounded-[28px] bg-white border-4 border-blue-50 hover:border-blue-400 transition-all text-left shadow-xl hover:shadow-blue-50 disabled:opacity-50"
+              className="group relative overflow-hidden p-2.5 rounded-[16px] bg-white border border-blue-50 hover:border-blue-400 transition-all text-left shadow-md hover:shadow-blue-50 disabled:opacity-50"
             >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
-                  <LogIn size={24} />
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform flex-shrink-0">
+                  <LogIn size={16} />
                 </div>
                 <div>
-                  <h2 className="text-lg font-black text-gray-800">Google 登入</h2>
-                  <p className="text-xs text-gray-400 font-medium font-sans">家長與管理員，同步雲端紀錄</p>
+                  <h2 className="text-[13px] font-black text-gray-800 leading-tight">Google 登入</h2>
+                  <p className="text-[8px] text-gray-400 font-medium font-sans">家長與管理員</p>
                 </div>
               </div>
             </button>
@@ -1243,15 +1243,15 @@ function LoginView({ onLogin, isProcessing }: { onLogin: (type: 'guest' | 'admin
             <button 
               onClick={() => setMode('admin')}
               disabled={isProcessing}
-              className="group relative overflow-hidden p-4 rounded-[28px] bg-white border-4 border-purple-50 hover:border-purple-400 transition-all text-left shadow-xl hover:shadow-purple-50 disabled:opacity-50"
+              className="group relative overflow-hidden p-2.5 rounded-[16px] bg-white border border-purple-50 hover:border-purple-400 transition-all text-left shadow-md hover:shadow-purple-50 disabled:opacity-50"
             >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center text-purple-500 group-hover:scale-110 transition-transform">
-                  <Lock size={24} />
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-purple-500 group-hover:scale-110 transition-transform flex-shrink-0">
+                  <Lock size={16} />
                 </div>
                 <div>
-                  <h2 className="text-lg font-black text-gray-800">管理者登入</h2>
-                  <p className="text-xs text-gray-400 font-medium font-sans">系統維護專用，輸入密碼驗證</p>
+                  <h2 className="text-[13px] font-black text-gray-800 leading-tight">管理者登入</h2>
+                  <p className="text-[8px] text-gray-400 font-medium font-sans">系統維護專用</p>
                 </div>
               </div>
             </button>
@@ -1259,10 +1259,10 @@ function LoginView({ onLogin, isProcessing }: { onLogin: (type: 'guest' | 'admin
         )}
 
         {mode === 'guest' && (
-          <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="space-y-6">
-            <div className="space-y-1 text-center">
-              <h2 className="text-xl font-black text-orange-600">哈囉！小朋友</h2>
-              <p className="text-gray-500 font-medium text-sm">你叫什麼名字呢？</p>
+          <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="space-y-3">
+            <div className="space-y-0.5 text-center">
+              <h2 className="text-sm font-black text-orange-600">哈囉！小朋友</h2>
+              <p className="text-gray-500 font-medium text-[9px]">你叫什麼名字呢？</p>
             </div>
             <input 
               type="text" 
@@ -1271,37 +1271,37 @@ function LoginView({ onLogin, isProcessing }: { onLogin: (type: 'guest' | 'admin
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
               disabled={isProcessing}
-              className="w-full px-5 py-3 rounded-2xl bg-gray-50 border-2 border-transparent focus:border-orange-400 outline-none text-center text-lg font-bold transition-all text-orange-600 disabled:opacity-50"
+              className="w-full px-3 py-1.5 rounded-lg bg-gray-50 border border-transparent focus:border-orange-400 outline-none text-center text-xs font-bold transition-all text-orange-600 disabled:opacity-50"
               onKeyDown={(e) => e.key === 'Enter' && nickname.trim() && !isProcessing && onLogin('guest', nickname)}
             />
-            <div className="flex gap-3">
+            <div className="flex gap-1.5">
               <button 
                 onClick={() => setMode('selection')}
                 disabled={isProcessing}
-                className="flex-1 py-4 rounded-2xl bg-gray-100 text-gray-500 font-bold hover:bg-gray-200 transition-all disabled:opacity-50"
+                className="flex-1 py-1.5 rounded-lg bg-gray-100 text-gray-500 text-[9px] font-bold hover:bg-gray-200 transition-all disabled:opacity-50"
               >
                 返回
               </button>
               <button 
                 onClick={() => onLogin('guest', nickname)}
                 disabled={!nickname.trim() || isProcessing}
-                className="flex-[2] py-3 rounded-2xl bg-orange-500 text-white text-lg font-bold shadow-lg shadow-orange-200 hover:bg-orange-600 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+                className="flex-[2] py-1.5 rounded-lg bg-orange-500 text-white text-xs font-bold shadow-md shadow-orange-50 hover:bg-orange-600 disabled:opacity-50 transition-all flex items-center justify-center gap-1"
               >
-                {isProcessing && <Loader2 className="animate-spin" size={20} />}
-                開始奇幻旅程
+                {isProcessing && <Loader2 className="animate-spin" size={14} />}
+                開始旅程
               </button>
             </div>
           </motion.div>
         )}
 
         {mode === 'admin' && (
-          <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="space-y-6">
-            <div className="space-y-2 text-center">
-              <h2 className="text-xl font-black text-purple-600">系統管理驗證</h2>
-              <p className="text-gray-500 font-medium">請輸入管理員信箱與通行密碼</p>
+          <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="space-y-3">
+            <div className="space-y-0.5 text-center">
+              <h2 className="text-sm font-black text-purple-600">系統管理驗證</h2>
+              <p className="text-gray-500 font-medium text-[9px]">請輸入管理員信箱與通行密碼</p>
             </div>
             
-            <div className="space-y-4">
+            <div className="space-y-2">
               <input 
                 type="email" 
                 placeholder="管理員信箱..." 
@@ -1311,7 +1311,7 @@ function LoginView({ onLogin, isProcessing }: { onLogin: (type: 'guest' | 'admin
                   setEmail(e.target.value);
                   setLocalError('');
                 }}
-                className={`w-full px-4 py-3 rounded-2xl bg-gray-50 border-2 outline-none text-center text-base font-bold transition-all disabled:opacity-50 ${localError.includes('信箱') ? 'border-red-400 bg-red-50 text-red-600' : 'border-transparent focus:border-purple-400 text-purple-600'}`}
+                className={`w-full px-3 py-1.5 rounded-lg bg-gray-50 border outline-none text-center text-[11px] font-bold transition-all disabled:opacity-50 ${localError.includes('信箱') ? 'border-red-400 bg-red-50 text-red-600' : 'border-transparent focus:border-purple-400 text-purple-600'}`}
               />
               <div className="relative">
                 <input 
@@ -1323,7 +1323,7 @@ function LoginView({ onLogin, isProcessing }: { onLogin: (type: 'guest' | 'admin
                     setPassword(e.target.value);
                     setLocalError('');
                   }}
-                  className={`w-full px-4 py-3 rounded-2xl bg-gray-50 border-2 outline-none text-center text-lg font-bold transition-all font-mono disabled:opacity-50 ${localError.includes('密碼') ? 'border-red-400 bg-red-50 text-red-600' : 'border-transparent focus:border-purple-400 text-purple-600'}`}
+                  className={`w-full px-3 py-1.5 rounded-lg bg-gray-50 border outline-none text-center text-xs font-bold transition-all font-mono disabled:opacity-50 ${localError.includes('密碼') ? 'border-red-400 bg-red-50 text-red-600' : 'border-transparent focus:border-purple-400 text-purple-600'}`}
                   onKeyDown={(e) => e.key === 'Enter' && email.trim() && password.trim() && !isProcessing && handleAdminSubmit()}
                 />
               </div>
@@ -1331,27 +1331,27 @@ function LoginView({ onLogin, isProcessing }: { onLogin: (type: 'guest' | 'admin
                 <motion.p 
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-red-500 text-sm font-bold mt-2 text-center"
+                  className="text-red-500 text-[9px] font-bold mt-0.5 text-center"
                 >
                   {localError}
                 </motion.p>
               )}
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-1.5">
               <button 
                 onClick={() => setMode('selection')}
                 disabled={isProcessing}
-                className="flex-1 py-4 rounded-2xl bg-gray-100 text-gray-500 font-bold hover:bg-gray-200 transition-all disabled:opacity-50"
+                className="flex-1 py-1.5 rounded-lg bg-gray-100 text-gray-500 text-[9px] font-bold hover:bg-gray-200 transition-all disabled:opacity-50"
               >
                 返回
               </button>
               <button 
                 onClick={handleAdminSubmit}
                 disabled={!email.trim() || !password.trim() || isProcessing}
-                className="flex-[2] py-3 rounded-2xl bg-purple-600 text-white text-lg font-bold shadow-lg shadow-purple-100 hover:bg-purple-700 disabled:opacity-50 transition-all font-sans flex items-center justify-center gap-2"
+                className="flex-[2] py-1.5 rounded-lg bg-purple-600 text-white text-xs font-bold shadow-md shadow-purple-50 hover:bg-purple-700 disabled:opacity-50 transition-all font-sans flex items-center justify-center gap-1"
               >
-                {isProcessing && <Loader2 className="animate-spin" size={20} />}
-                登入管理台
+                {isProcessing && <Loader2 className="animate-spin" size={14} />}
+                登入管理
               </button>
             </div>
           </motion.div>
@@ -1403,17 +1403,17 @@ function BookCard({ book, isFavorite, isPassed, onToggleFavorite, onClick }: Boo
         )}
       </div>
 
-      <div className="p-1.5 space-y-0.5">
-        <div className="flex items-start justify-between gap-1">
-          <h3 className="font-bold text-[13px] line-clamp-1 cursor-pointer" onClick={onClick}>{book.title}</h3>
+      <div className="p-1 space-y-0">
+        <div className="flex items-start justify-between gap-0.5">
+          <h3 className="font-bold text-[11px] line-clamp-1 cursor-pointer" onClick={onClick}>{book.title}</h3>
           <button 
             onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
             className={`p-0.5 transition-colors ${isFavorite ? 'text-red-500' : 'text-gray-300 hover:text-red-200'}`}
           >
-            <Heart size={14} fill={isFavorite ? 'currentColor' : 'none'} />
+            <Heart size={12} fill={isFavorite ? 'currentColor' : 'none'} />
           </button>
         </div>
-        <p className="text-[10px] text-gray-400 line-clamp-2 leading-tight">{book.description}</p>
+        <p className="text-[9px] text-gray-400 line-clamp-1 leading-tight">{book.description}</p>
       </div>
     </motion.div>
   );
@@ -1421,50 +1421,50 @@ function BookCard({ book, isFavorite, isPassed, onToggleFavorite, onClick }: Boo
 
 function SELReportModal({ bookTitle, report, onClose }: { bookTitle: string, report: any, onClose: () => void }) {
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[70] flex items-center justify-center p-6 overflow-auto">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[70] flex items-center justify-center p-3 overflow-auto">
       <motion.div 
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-white rounded-3xl p-6 max-w-2xl w-full text-center space-y-5 shadow-2xl my-4 relative text-left"
+        className="bg-white rounded-xl p-3 md:p-5 max-w-lg w-full text-center space-y-3 shadow-2xl my-2 relative text-left"
       >
-        <button onClick={onClose} className="absolute top-6 right-6 text-gray-300 hover:text-gray-500">
-          <X size={24} />
+        <button onClick={onClose} className="absolute top-3 right-3 text-gray-300 hover:text-gray-500">
+          <X size={18} />
         </button>
 
-        <div className="text-center space-y-2">
-          <div className="bg-blue-100 w-14 h-14 rounded-2xl flex items-center justify-center mx-auto text-blue-600 rotate-3">
-            <Sparkles size={32} />
+        <div className="text-center space-y-0.5">
+          <div className="bg-blue-100 w-10 h-10 rounded-xl flex items-center justify-center mx-auto text-blue-600 rotate-3">
+            <Sparkles size={22} />
           </div>
-          <h3 className="text-2xl font-black text-blue-600 mt-3">SEL 歷史報告書</h3>
-          <p className="text-gray-400 font-bold text-xs">書目：{bookTitle}</p>
-          <p className="text-gray-300 text-[9px]">測驗時間：{new Date(report.date).toLocaleString()}</p>
+          <h3 className="text-base font-black text-blue-600 mt-1">SEL 歷史報告書</h3>
+          <p className="text-gray-400 font-bold text-[9px]">書目：{bookTitle}</p>
+          <p className="text-gray-300 text-[8px]">測驗時間：{new Date(report.date).toLocaleString()}</p>
         </div>
 
-        <div className="bg-blue-50/50 p-4 rounded-2xl border-2 border-blue-100 space-y-3">
-          <div className="flex items-end justify-between border-b border-blue-100 pb-2">
-            <span className="text-blue-800 font-black text-base">總體表現</span>
-            <span className="text-blue-600 font-black text-2xl">{report.score}%</span>
+        <div className="bg-blue-50/50 p-2.5 rounded-lg border-2 border-blue-100 space-y-1.5">
+          <div className="flex items-end justify-between border-b border-blue-100 pb-1">
+            <span className="text-blue-800 font-black text-xs">總體表現</span>
+            <span className="text-blue-600 font-black text-lg">{report.score}%</span>
           </div>
-          <p className="text-blue-700 font-bold leading-relaxed">
+          <p className="text-blue-700 font-bold leading-relaxed text-[11px]">
             評語：{report.feedback}
           </p>
         </div>
 
-        <div className="space-y-3">
-          <h4 className="text-sm font-black text-gray-500 ml-2">五大核心維度分析</h4>
-          <div className="grid grid-cols-1 gap-2">
+        <div className="space-y-2.5">
+          <h4 className="text-[11px] font-black text-gray-500 ml-1">五大核心維度分析</h4>
+          <div className="grid grid-cols-1 gap-1.5">
             {Object.entries(report.dimensionScores || report.dimensions || {}).map(([dim, score]: [string, any]) => (
-              <div key={dim} className="bg-gray-50 p-4 rounded-2xl flex items-center justify-between">
-                <span className="text-sm font-bold text-gray-700">{dim}</span>
-                <div className="flex items-center gap-3">
-                  <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div key={dim} className="bg-gray-50 p-3 rounded-xl flex items-center justify-between">
+                <span className="text-[11px] font-bold text-gray-700">{dim}</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-20 h-1.5 bg-gray-200 rounded-full overflow-hidden">
                     <motion.div 
                       initial={{ width: 0 }}
                       animate={{ width: `${score}%` }}
                       className="h-full bg-blue-500"
                     />
                   </div>
-                  <span className="text-sm font-black text-blue-600">{score}%</span>
+                  <span className="text-[11px] font-black text-blue-600">{score}%</span>
                 </div>
               </div>
             ))}
@@ -1473,7 +1473,7 @@ function SELReportModal({ bookTitle, report, onClose }: { bookTitle: string, rep
 
         <button 
           onClick={onClose} 
-          className="w-full py-4 bg-gray-100 text-gray-500 rounded-2xl font-black text-lg hover:bg-gray-200 transition-all"
+          className="w-full py-3 bg-gray-100 text-gray-500 rounded-xl font-black text-base hover:bg-gray-200 transition-all"
         >
           關閉報告
         </button>
@@ -1586,12 +1586,12 @@ function ReadingView({
       animate={{ opacity: 1 }}
       className="fixed inset-0 bg-white z-50 flex flex-col"
     >
-      <div className="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between">
-        <button onClick={() => { handleSaveProgress(); onBack(); }} className="p-2 hover:bg-gray-100 rounded-full">
-          <ChevronLeft size={24} />
+      <div className="bg-white border-b border-gray-100 px-2 py-1.5 flex items-center justify-between">
+        <button onClick={() => { handleSaveProgress(); onBack(); }} className="p-1 hover:bg-gray-100 rounded-full">
+          <ChevronLeft size={18} />
         </button>
-        <h2 className="font-bold text-lg truncate px-4">{book.title}</h2>
-        <div className="w-10"></div>
+        <h2 className="font-bold text-sm truncate px-3">{book.title}</h2>
+        <div className="w-7"></div>
       </div>
 
       <div className="flex-1 overflow-auto bg-gray-50 relative flex">
@@ -1811,7 +1811,7 @@ function QuizModal({ type, questions, bookTitle, selIndicators, onClose, onPass 
   const [isWrong, setIsWrong] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
   const [responses, setResponses] = useState<any[]>([]);
-  const [fontSize, setFontSize] = useState(16); // Default base font size
+  const [fontSize, setFontSize] = useState(15); // Reduced default base font size
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [showHintModal, setShowHintModal] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -2127,14 +2127,14 @@ function QuizModal({ type, questions, bookTitle, selIndicators, onClose, onPass 
 
   if (quizSet.length === 0) {
     return (
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[60] flex items-center justify-center p-6">
-        <div className="bg-white rounded-3xl p-6 max-w-md w-full text-center space-y-5">
-          <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto ${type === 'content' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'}`}>
-            <AlertTriangle size={32} />
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[60] flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl p-5 max-w-sm w-full text-center space-y-4">
+          <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto ${type === 'content' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'}`}>
+            <AlertTriangle size={24} />
           </div>
-          <h3 className="text-xl font-bold">還沒有測驗喔！</h3>
-          <p className="text-gray-500">管理者尚未為這本書建立{type === 'content' ? '內容' : 'SEL'}測驗。</p>
-          <button onClick={onClose} className="w-full py-4 bg-gray-100 text-gray-500 rounded-2xl font-bold">先跳過</button>
+          <h3 className="text-lg font-bold">還沒有測驗喔！</h3>
+          <p className="text-gray-500 text-sm">管理者尚未為這本書建立{type === 'content' ? '內容' : 'SEL'}測驗。</p>
+          <button onClick={onClose} className="w-full py-3 bg-gray-100 text-gray-500 rounded-xl font-bold text-sm">先跳過</button>
         </div>
       </div>
     );
@@ -2147,66 +2147,61 @@ function QuizModal({ type, questions, bookTitle, selIndicators, onClose, onPass 
         <motion.div 
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="bg-white rounded-3xl p-5 md:p-8 max-w-2xl w-full text-center space-y-6 shadow-2xl mt-0 mb-4 md:mb-6"
+          className="bg-white rounded-xl p-3 md:p-5 max-w-md w-full text-center space-y-3 shadow-2xl mt-0 mb-3"
         >
           {type === 'content' && res ? (
-            <div className="space-y-8">
-              <div className="space-y-4">
-                <div className={`w-24 h-24 rounded-full flex items-center justify-center mx-auto shadow-inner ${res.accuracy >= 80 ? 'bg-green-100 text-green-600' : 'bg-orange-100 text-orange-600'}`}>
-                  {res.accuracy >= 80 ? <Award size={56} /> : <BookOpen size={56} />}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto shadow-inner ${res.accuracy >= 80 ? 'bg-green-100 text-green-600' : 'bg-orange-100 text-orange-600'}`}>
+                  {res.accuracy >= 80 ? <Award size={40} /> : <BookOpen size={40} />}
                 </div>
-                <h3 className={`text-4xl font-black ${res.accuracy >= 80 ? 'text-green-600' : 'text-orange-600'}`}>
+                <h3 className={`text-xl font-black ${res.accuracy >= 80 ? 'text-green-600' : 'text-orange-600'}`}>
                   {res.accuracy >= 80 ? '故事解密成功！' : '繼續努力喔！'}
                 </h3>
-                <div className="flex justify-center gap-8 py-2">
+                <div className="flex justify-center gap-5 py-0.5">
                   <div className="text-center">
-                    <p className="text-gray-400 text-xs font-bold uppercase tracking-widest">答對題數</p>
-                    <p className="text-xl font-black text-gray-800">{res.correctCount} / {res.totalCount}</p>
+                    <p className="text-gray-400 text-[9px] font-bold uppercase tracking-widest">答對題數</p>
+                    <p className="text-base font-black text-gray-800">{res.correctCount} / {res.totalCount}</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-gray-400 text-xs font-bold uppercase tracking-widest">正確率</p>
-                    <p className={`text-xl font-black ${res.accuracy >= 80 ? 'text-green-600' : 'text-orange-600'}`}>{res.accuracy}%</p>
+                    <p className="text-gray-400 text-[9px] font-bold uppercase tracking-widest">正確率</p>
+                    <p className={`text-base font-black ${res.accuracy >= 80 ? 'text-green-600' : 'text-orange-600'}`}>{res.accuracy}%</p>
                   </div>
                 </div>
-                <p className="text-gray-500 font-medium font-sans max-w-sm mx-auto leading-relaxed">
+                <p className="text-gray-500 font-medium text-xs max-w-sm mx-auto leading-relaxed">
                   {res.accuracy >= 80 
-                    ? '太棒了！你非常仔細地讀完了這本書，並成功掌握了故事的細節！' 
-                    : '再讀一次故事，你一定能發現更多被忽略的小秘密！'}
+                    ? '太棒了！你非常仔細地讀完了這本書，並掌握了故事細節！' 
+                    : '再讀一次故事，你一定能發現更多小秘密！'}
                 </p>
               </div>
 
               {/* Question Review Section */}
-              <div className="text-left space-y-4">
-                <h4 className="font-black text-gray-400 text-xs uppercase tracking-[0.2em] px-2 flex items-center gap-2">
-                  <MessageCircle size={14} />
+              <div className="text-left space-y-2">
+                <h4 className="font-black text-gray-400 text-[9px] uppercase tracking-[0.2em] px-1 flex items-center gap-1.5">
+                  <MessageCircle size={10} />
                   測驗內容回顧
                 </h4>
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {responses.map((r, i) => (
-                    <div key={i} className={`p-4 rounded-3xl border-2 transition-all ${r.isCorrect ? 'bg-green-50/30 border-green-100' : 'bg-red-50/30 border-red-100'}`}>
-                      <div className="flex justify-between items-start mb-2">
-                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">問題 {i + 1}</span>
+                    <div key={i} className={`p-2.5 rounded-xl border transition-all ${r.isCorrect ? 'bg-green-50/30 border-green-100' : 'bg-red-50/30 border-red-100'}`}>
+                      <div className="flex justify-between items-start mb-1">
+                        <span className="text-[8px] font-black text-gray-400 uppercase tracking-wider">問題 {i + 1}</span>
                         {r.isCorrect ? (
-                          <span className="bg-green-100 text-green-600 px-2 py-0.5 rounded-full text-[10px] font-black">正確</span>
+                          <span className="bg-green-100 text-green-600 px-1 py-0.5 rounded-full text-[8px] font-black">正確</span>
                         ) : (
-                          <span className="bg-red-100 text-red-600 px-2 py-0.5 rounded-full text-[10px] font-black">答錯</span>
+                          <span className="bg-red-100 text-red-600 px-1 py-0.5 rounded-full text-[8px] font-black">答錯</span>
                         )}
                       </div>
-                      <p className="font-bold text-gray-800 text-sm mb-3 leading-relaxed">{r.question}</p>
-                      <div className="space-y-1.5">
-                        <div className="flex items-center gap-2 text-xs">
+                      <p className="font-bold text-gray-800 text-xs mb-1 leading-relaxed">{r.question}</p>
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-1.5 text-[10px]">
                           <span className="text-gray-400 font-bold shrink-0">你的回答：</span>
                           <span className={r.isCorrect ? 'text-green-600 font-bold' : 'text-red-500 font-bold'}>{r.selectedText}</span>
                         </div>
                         {!r.isCorrect && (
-                          <div className="flex items-center gap-2 text-xs">
+                          <div className="flex items-center gap-1.5 text-[10px]">
                             <span className="text-orange-500 font-bold shrink-0">正確答案：</span>
                             <span className="text-orange-600 font-bold">{r.correctAnswerText}</span>
-                          </div>
-                        )}
-                        {r.hint && (
-                          <div className="mt-2 p-2.5 bg-white/60 rounded-xl border border-gray-100 text-[11px] text-gray-500 leading-relaxed font-medium italic">
-                            💡 解析提示：{r.hint}
                           </div>
                         )}
                       </div>
@@ -2215,20 +2210,20 @@ function QuizModal({ type, questions, bookTitle, selIndicators, onClose, onPass 
                 </div>
               </div>
 
-              <div className="flex flex-col gap-3 pt-6 border-t border-gray-100">
+              <div className="flex flex-col gap-1.5 pt-3 border-t border-gray-100">
                 <button 
                   onClick={() => onPass()} 
                   disabled={res.accuracy < 80}
-                  className={`w-full py-4 rounded-2xl font-black text-lg shadow-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98] font-sans ${
+                  className={`w-full py-2.5 rounded-lg font-black text-sm shadow-md flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${
                     res.accuracy >= 80 
                     ? 'bg-green-500 text-white shadow-green-100 hover:bg-green-600' 
                     : 'bg-gray-100 text-gray-400 shadow-none cursor-not-allowed'
                   }`}
                 >
-                  <Award size={24} />
+                  <Award size={18} />
                   領取榮譽勳章
                 </button>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-1.5">
                   <button 
                     onClick={() => {
                       setCurrentIdx(0);
@@ -2236,60 +2231,58 @@ function QuizModal({ type, questions, bookTitle, selIndicators, onClose, onPass 
                       setIsFinished(false);
                       setSelectedOption(null);
                     }}
-                    className="py-4 bg-orange-100 text-orange-600 rounded-2xl font-black text-base hover:bg-orange-200 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                    className="py-2.5 bg-orange-100 text-orange-600 rounded-lg font-black text-xs hover:bg-orange-200 transition-all active:scale-[0.98] flex items-center justify-center gap-1.5"
                   >
-                    <RotateCcw size={20} />
+                    <RotateCcw size={16} />
                     再測一次
                   </button>
                   <button 
                     onClick={onClose}
-                    className="py-4 bg-gray-100 text-gray-600 rounded-2xl font-black text-base hover:bg-gray-200 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                    className="py-2.5 bg-gray-100 text-gray-600 rounded-lg font-black text-xs hover:bg-gray-200 transition-all active:scale-[0.98] flex items-center justify-center gap-1.5"
                   >
-                    <Home size={20} />
+                    <Home size={16} />
                     回到首頁
                   </button>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="space-y-6 text-left">
-              <div ref={reportRef} className="bg-white p-2 space-y-6" style={{ backgroundColor: '#ffffff' }}>
-                <div className="text-center space-y-2 pb-4">
-                  <div className="w-16 h-16 rounded-3xl flex items-center justify-center mx-auto rotate-3" style={{ backgroundColor: '#DBEAFE', color: '#2563EB' }}>
-                    <Sparkles size={36} />
+            <div className="space-y-3 text-left">
+              <div ref={reportRef} className="bg-white p-1.5 space-y-3" style={{ backgroundColor: '#ffffff' }}>
+                <div className="text-center space-y-0.5 pb-1">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center mx-auto rotate-3" style={{ backgroundColor: '#DBEAFE', color: '#2563EB' }}>
+                    <Sparkles size={24} />
                   </div>
-                  <h3 className="text-xl font-black mt-4" style={{ color: '#2563EB' }}>SEL 成長報告書</h3>
-                  <p className="font-bold text-sm" style={{ color: '#9CA3AF' }}>書目：{bookTitle}</p>
+                  <h3 className="text-base font-black mt-1.5" style={{ color: '#2563EB' }}>SEL 成長報告書</h3>
+                  <p className="font-bold text-[10px]" style={{ color: '#9CA3AF' }}>書目：{bookTitle}</p>
                 </div>
 
-                <div className="p-6 rounded-[32px] border-2 space-y-4 mb-4" style={{ backgroundColor: 'rgba(239, 246, 255, 0.5)', borderColor: '#DBEAFE' }}>
-                  <div className="flex items-end justify-between border-b pb-2" style={{ borderColor: '#DBEAFE' }}>
-                    <span className="font-black text-lg" style={{ color: '#1E40AF' }}>總體表現</span>
-                    <span className="font-black text-2xl" style={{ color: '#2563EB' }}>{selReport?.score}%</span>
+                <div className="p-3 rounded-[20px] border-2 space-y-2 mb-1.5" style={{ backgroundColor: 'rgba(239, 246, 255, 0.5)', borderColor: '#DBEAFE' }}>
+                  <div className="flex items-end justify-between border-b pb-1" style={{ borderColor: '#DBEAFE' }}>
+                    <span className="font-black text-sm" style={{ color: '#1E40AF' }}>總體表現</span>
+                    <span className="font-black text-lg" style={{ color: '#2563EB' }}>{selReport?.score}%</span>
                   </div>
-                  <div className="space-y-3">
-                    <p className="font-bold leading-relaxed" style={{ color: '#1D4ED8' }}>
+                  <div className="space-y-1.5">
+                    <p className="font-bold leading-relaxed text-xs" style={{ color: '#1D4ED8' }}>
                       評語：{selReport?.feedback}
                     </p>
-                    <div className="p-4 rounded-2xl text-xs space-y-2 border" style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)', borderColor: '#EFF6FF' }}>
+                    <div className="p-2.5 rounded-lg text-[10px] space-y-1 border" style={{ backgroundColor: 'rgba(255, 255, 255, 0.6)', borderColor: '#EFF6FF' }}>
                       <p className="font-bold tracking-wider">【 深度分析 】</p>
                       <p className="font-medium leading-relaxed whitespace-pre-line" style={{ color: '#4B5563' }}>{selReport?.analysis}</p>
-                      <p className="font-black tracking-wider pt-1" style={{ color: '#2563EB' }}>【 成長勵志 】</p>
+                      <p className="font-black tracking-wider pt-0.5" style={{ color: '#2563EB' }}>【 成長勵志 】</p>
                       <p className="font-medium italic" style={{ color: '#4B5563' }}>「{selReport?.encouragement}」</p>
-                      <p className="font-black tracking-wider pt-1" style={{ color: '#EA580C' }}>【 魔法指南 】</p>
-                      <p className="font-medium" style={{ color: '#4B5563' }}>{selReport?.suggestions}</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="space-y-3 pb-6">
-                  <h4 className="text-sm font-black ml-2" style={{ color: '#6B7280' }}>五大核心維度分析</h4>
-                  <div className="grid grid-cols-1 gap-2">
+                <div className="space-y-1.5 pb-3">
+                  <h4 className="text-[10px] font-black ml-1" style={{ color: '#6B7280' }}>核心維度分析</h4>
+                  <div className="grid grid-cols-1 gap-1">
                     {selReport && Object.entries(selReport.dimensionScores).map(([dim, score]) => (
-                      <div key={dim} className="p-4 rounded-2xl flex items-center justify-between" style={{ backgroundColor: '#F9FAFB' }}>
-                        <span className="text-sm font-bold" style={{ color: '#374151' }}>{dim}</span>
-                        <div className="flex items-center gap-3">
-                          <div className="w-24 h-2 rounded-full overflow-hidden" style={{ backgroundColor: '#E5E7EB' }}>
+                      <div key={dim} className="p-2.5 rounded-lg flex items-center justify-between" style={{ backgroundColor: '#F9FAFB' }}>
+                        <span className="text-[10px] font-bold" style={{ color: '#374151' }}>{dim}</span>
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-16 h-1 rounded-full overflow-hidden" style={{ backgroundColor: '#E5E7EB' }}>
                             <motion.div 
                               initial={{ width: 0 }}
                               animate={{ width: `${score}%` }}
@@ -2297,7 +2290,7 @@ function QuizModal({ type, questions, bookTitle, selIndicators, onClose, onPass 
                               style={{ backgroundColor: '#3B82F6' }}
                             />
                           </div>
-                          <span className="text-sm font-black" style={{ color: '#2563EB' }}>{score}%</span>
+                          <span className="text-[10px] font-black" style={{ color: '#2563EB' }}>{score}%</span>
                         </div>
                       </div>
                     ))}
@@ -2305,50 +2298,44 @@ function QuizModal({ type, questions, bookTitle, selIndicators, onClose, onPass 
                 </div>
 
                 {/* Additional details for PDF */}
-                <div className="pt-6 border-t space-y-4 pb-8" style={{ borderColor: '#F3F4F6' }}>
-                  <h4 className="text-sm font-black ml-2" style={{ color: '#6B7280' }}>詳細作答記錄</h4>
-                  <div className="space-y-3">
-                    {responses.map((res, i) => (
-                      <div key={i} className="border p-4 rounded-2xl space-y-2" style={{ backgroundColor: '#ffffff', borderColor: '#F3F4F6', borderWidth: '1px' }}>
-                        <p className="text-sm font-bold" style={{ color: '#1F2937' }}>問題 {i+1}：{res.question}</p>
-                        <p className="text-xs font-medium" style={{ color: '#2563EB' }}>你的選擇：{res.selectedText}</p>
+                <div className="pt-3 border-t space-y-2 pb-4 text-[10px]" style={{ borderColor: '#F3F4F6' }}>
+                  <h4 className="font-black ml-1" style={{ color: '#6B7280' }}>詳細作答記錄</h4>
+                  <div className="space-y-1.5">
+                    {responses.slice(0, 5).map((res, i) => (
+                      <div key={i} className="border p-2 rounded-lg space-y-0.5" style={{ backgroundColor: '#ffffff', borderColor: '#F3F4F6', borderWidth: '1px' }}>
+                        <p className="font-bold" style={{ color: '#1F2937' }}>問題 {i+1}：{res.question.length > 25 ? res.question.substring(0, 25) + '...' : res.question}</p>
+                        <p className="font-medium" style={{ color: '#2563EB' }}>你的選擇：{res.selectedText}</p>
                       </div>
                     ))}
                   </div>
                 </div>
               </div>
 
-              <div className="flex flex-col gap-3 pt-4">
-                <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex flex-col gap-1.5 pt-1">
+                <div className="flex flex-col sm:flex-row gap-1.5">
                   <button 
                     onClick={() => onPass(selReport)} 
-                    className="flex-[2] py-4 bg-blue-600 text-white rounded-2xl font-black text-lg shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all active:scale-[0.98] font-sans"
+                    className="flex-[2] py-2.5 bg-blue-600 text-white rounded-lg font-black text-sm shadow-md shadow-blue-50 hover:bg-blue-700 transition-all active:scale-[0.98]"
                   >
-                    儲存 SEL 成長紀錄
+                    儲存 SEL 紀錄
                   </button>
                   <button 
                     onClick={handleDownloadPDF}
                     disabled={isGeneratingPDF}
-                    className={`flex-1 py-4 bg-white border-2 border-blue-600 text-blue-600 rounded-2xl font-black text-lg shadow-md transition-all flex items-center justify-center gap-2 ${isGeneratingPDF ? 'opacity-50 cursor-wait' : 'hover:bg-blue-50'}`}
+                    className={`flex-1 py-2.5 bg-white border-2 border-blue-600 text-blue-600 rounded-lg font-black text-sm shadow-sm transition-all flex items-center justify-center gap-1.5 ${isGeneratingPDF ? 'opacity-50 cursor-wait' : 'hover:bg-blue-50'}`}
                   >
                     {isGeneratingPDF ? (
-                      <>
-                        <Loader2 className="animate-spin" size={22} />
-                        產生中...
-                      </>
+                      <Loader2 className="animate-spin" size={16} />
                     ) : (
-                      <>
-                        <Download size={22} />
-                        結果PDF下載
-                      </>
+                      <Download size={16} />
                     )}
+                    PDF
                   </button>
                 </div>
                 <button 
                   onClick={onClose}
-                  className="w-full py-2.5 bg-gray-100 text-gray-500 rounded-2xl font-bold text-sm hover:bg-gray-200 transition-all flex items-center justify-center gap-2"
+                  className="w-full py-2 bg-gray-100 text-gray-500 rounded-lg font-bold text-[11px] hover:bg-gray-200 transition-all"
                 >
-                  <Home size={16} />
                   回首頁
                 </button>
               </div>
@@ -2727,9 +2714,9 @@ function AdminView({ books, selIndicators, onBack, authError, isAdmin, firebaseU
     }
     setIsProcessing(true);
     try {
-      const id = book.id || doc(collection(db, 'books')).id;
+      const id = book.id || doc(collection(db, 'kidsbook-GitHub-to-Firebase')).id;
       const data = { ...book, id, createdAt: book.createdAt || Date.now() };
-      await setDoc(doc(db, 'books', id), cleanData(data));
+      await setDoc(doc(db, 'kidsbook-GitHub-to-Firebase', id), cleanData(data));
       alert("✅ 圖書儲存成功！");
       setEditingBook(null); // 跳回書單介面
     } catch (error: any) {
@@ -3123,51 +3110,51 @@ function BookEditor({ book, onSave, onCancel }: { book: BookData, onSave: (b: Bo
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] overflow-y-auto px-4 py-10 flex justify-center items-start">
-      <div className="bg-white rounded-3xl p-6 max-w-2xl w-full shadow-2xl relative mb-8">
-        <div className="flex items-center justify-between mb-8">
-          <h3 className="text-xl font-black text-orange-600">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] overflow-y-auto px-2 py-4 flex justify-center items-start">
+      <div className="bg-white rounded-2xl p-4 max-w-2xl w-full shadow-2xl relative mb-4">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-black text-orange-600">
             {book.id ? '📖 編輯書籍' : '✨ 新增童書'}
           </h3>
-          <button onClick={onCancel} className="p-2 hover:bg-gray-100 rounded-full text-gray-400">
-            <X size={24} />
+          <button onClick={onCancel} className="p-1.5 hover:bg-gray-100 rounded-full text-gray-400">
+            <X size={20} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {/* Main Title Field - Single Column for better visibility */}
-          <div className="bg-orange-50/30 p-6 rounded-[32px] border-2 border-orange-100 space-y-2">
-            <label className="block text-base font-black text-orange-700">書名 (必填) <span className="text-red-500">*</span></label>
+          <div className="bg-orange-50/30 p-4 rounded-2xl border-2 border-orange-100 space-y-1.5">
+            <label className="block text-sm font-black text-orange-700">書名 (必填) <span className="text-red-500">*</span></label>
             <input 
               required
               type="text" 
               value={formData.title}
               onChange={e => setFormData({ ...formData, title: e.target.value })}
-              className="w-full px-6 py-4 rounded-2xl bg-white border-2 border-orange-200 focus:border-orange-500 outline-none transition-all font-black text-xl text-orange-900 shadow-sm"
+              className="w-full px-4 py-2.5 rounded-xl bg-white border-2 border-orange-200 focus:border-orange-500 outline-none transition-all font-black text-lg text-orange-900 shadow-sm"
               placeholder="例如：勇敢的小火車"
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {/* Left Column */}
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <label className="block text-sm font-bold text-gray-700">作者</label>
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-gray-700">作者</label>
                 <input 
                   type="text" 
                   value={formData.author}
                   onChange={e => setFormData({ ...formData, author: e.target.value })}
-                  className="w-full px-5 py-3 rounded-2xl bg-gray-50 border-2 border-gray-100 focus:border-orange-400 outline-none transition-all"
+                  className="w-full px-4 py-2 rounded-xl bg-gray-50 border-2 border-gray-100 focus:border-orange-400 outline-none transition-all text-sm"
                   placeholder="預設為：童書作者"
                 />
               </div>
 
-              <div className="space-y-2">
-                <label className="block text-sm font-bold text-gray-700">書籍類型 <span className="text-red-500">*</span></label>
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-gray-700">書籍類型 <span className="text-red-500">*</span></label>
                 <select 
                   value={formData.type}
                   onChange={e => setFormData({ ...formData, type: e.target.value as any, fileData: '' })}
-                  className="w-full px-5 py-3 rounded-2xl bg-gray-50 border-2 border-gray-100 focus:border-orange-400 outline-none transition-all appearance-none"
+                  className="w-full px-4 py-2 rounded-xl bg-gray-50 border-2 border-gray-100 focus:border-orange-400 outline-none transition-all appearance-none text-sm"
                 >
                   <option value="text">📖 純文字故事</option>
                   <option value="youtube">📺 YouTube 影片</option>
@@ -3176,111 +3163,112 @@ function BookEditor({ book, onSave, onCancel }: { book: BookData, onSave: (b: Bo
                 </select>
               </div>
 
-              <div className="space-y-2">
-                <label className="block text-sm font-bold text-gray-700">關鍵字 (以逗號分隔)</label>
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-gray-700">關鍵字 (以逗號分隔)</label>
                 <input 
                   type="text" 
                   value={formData.keywords.join(', ')}
                   onChange={e => handleKeywordsChange(e.target.value)}
                   placeholder="例如：動物, 勇敢, 春天"
-                  className="w-full px-5 py-3 rounded-2xl bg-gray-50 border-2 border-gray-100 focus:border-orange-400 outline-none transition-all"
+                  className="w-full px-4 py-2 rounded-xl bg-gray-50 border-2 border-gray-100 focus:border-orange-400 outline-none transition-all text-sm"
                 />
               </div>
             </div>
 
             {/* Right Column */}
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <label className="block text-sm font-bold text-gray-700">封面圖片</label>
-                <div className="flex items-center gap-4">
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-gray-700">封面圖片</label>
+                <div className="flex items-center gap-3">
                   <div className="flex-1">
                     <input 
                       key={`cover-${fileInputKey}`}
                       type="file" 
                       accept="image/*"
                       onChange={e => handleFileChange(e, 'coverImageUrl')}
-                      className="text-xs block w-full text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-orange-100 file:text-orange-700 hover:file:bg-orange-200 cursor-pointer"
+                      className="text-[10px] block w-full text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-orange-100 file:text-orange-700 hover:file:bg-orange-200 cursor-pointer"
                     />
                   </div>
                   {formData.coverImageUrl && (
-                    <img src={formData.coverImageUrl || undefined} className="h-16 w-12 object-cover rounded-xl border-2 border-orange-100 shadow-sm" referrerPolicy="no-referrer" />
+                    <img src={formData.coverImageUrl || undefined} className="h-12 w-9 object-cover rounded-lg border-2 border-orange-100 shadow-sm" referrerPolicy="no-referrer" />
                   )}
                 </div>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {formData.type === 'text' && (
-                  <div className="space-y-2">
-                    <label className="block text-sm font-bold text-gray-700">故事內容 <span className="text-red-500">*</span></label>
+                  <div className="space-y-1">
+                    <label className="block text-xs font-bold text-gray-700">故事內容 <span className="text-red-500">*</span></label>
                     <textarea 
                       required
                       value={formData.fileData}
                       onChange={e => setFormData({ ...formData, fileData: e.target.value })}
-                      rows={6}
-                      className="w-full px-5 py-3 rounded-2xl bg-gray-50 border-2 border-gray-100 focus:border-orange-400 outline-none transition-all text-sm leading-relaxed"
+                      rows={4}
+                      className="w-full px-4 py-2 rounded-xl bg-gray-50 border-2 border-gray-100 focus:border-orange-400 outline-none transition-all text-xs leading-relaxed"
                       placeholder="在此輸入或貼上故事內容..."
                     ></textarea>
                   </div>
                 )}
 
                 {formData.type === 'youtube' && (
-                  <div className="space-y-2">
-                    <label className="block text-sm font-bold text-gray-700">YouTube 網址或 ID <span className="text-red-500">*</span></label>
+                  <div className="space-y-1">
+                    <label className="block text-xs font-bold text-gray-700">YouTube 網址或 ID <span className="text-red-500">*</span></label>
                     <input 
                       required
                       type="text" 
                       value={formData.fileData}
                       onChange={e => setFormData({ ...formData, fileData: e.target.value })}
-                      className="w-full px-5 py-3 rounded-2xl bg-gray-50 border-2 border-gray-100 focus:border-orange-400 outline-none transition-all"
+                      className="w-full px-4 py-2 rounded-xl bg-gray-50 border-2 border-gray-100 focus:border-orange-400 outline-none transition-all text-xs"
                       placeholder="https://www.youtube.com/watch?v=..."
                     />
                   </div>
                 )}
 
                 {(formData.type === 'pdf' || formData.type === 'video') && (
-                  <div className="space-y-2">
-                    <label className="block text-sm font-bold text-gray-700">上傳檔案 ({formData.type.toUpperCase()}) <span className="text-red-500">*</span></label>
+                  <div className="space-y-1">
+                    <label className="block text-xs font-bold text-gray-700">上傳檔案 ({formData.type.toUpperCase()}) <span className="text-red-500">*</span></label>
                     <input 
                       key={`file-${fileInputKey}`}
                       required={!formData.fileData}
                       type="file" 
                       accept={formData.type === 'pdf' ? 'application/pdf' : 'video/mp4'}
                       onChange={e => handleFileChange(e, 'fileData')}
-                      className="text-xs block w-full text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 cursor-pointer"
+                      className="text-[10px] block w-full text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 cursor-pointer"
                     />
                     {formData.fileData && (
-                      <p className="text-[10px] text-green-600 font-bold mt-1 flex items-center gap-1 bg-green-50 px-2 py-1 rounded-lg">
-                        <CheckCircle size={12} /> 檔案已備妥 (約 {Math.round((formData.fileData.length * 3 / 4) / 1024)} KB)
+                      <p className="text-[9px] text-green-600 font-bold mt-0.5 flex items-center gap-1 bg-green-50 px-1.5 py-0.5 rounded-md">
+                        <CheckCircle size={10} /> 檔案已備妥 (約 {Math.round((formData.fileData.length * 3 / 4) / 1024)} KB)
                       </p>
                     )}
                   </div>
                 )}
               </div>
 
-              <div className="space-y-2">
-                <label className="block text-sm font-bold text-gray-700">故事大綱 (推薦語)</label>
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-gray-700">故事大綱 (推薦語)</label>
                 <textarea 
                   value={formData.description}
                   onChange={e => setFormData({ ...formData, description: e.target.value })}
-                  rows={3}
-                  className="w-full px-5 py-3 rounded-2xl bg-gray-50 border-2 border-gray-100 focus:border-orange-400 outline-none transition-all text-sm"
+                  rows={2}
+                  className="w-full px-4 py-2 rounded-xl bg-gray-50 border-2 border-gray-100 focus:border-orange-400 outline-none transition-all text-xs"
                   placeholder="留空將根據書名與關鍵字自動產生..."
                 ></textarea>
               </div>
             </div>
           </div>
 
-          <div className="flex gap-4 pt-4">
-            <button type="submit" className="flex-1 py-4 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl font-black text-xl shadow-lg shadow-orange-100 transition-all active:scale-[0.98]">
+          <div className="flex gap-3 pt-2">
+            <button type="submit" className="flex-1 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-black text-base shadow-md shadow-orange-50 transition-all active:scale-[0.98]">
               確認儲存
             </button>
-            <button type="button" onClick={onCancel} className="px-8 py-4 bg-gray-100 hover:bg-gray-200 text-gray-500 rounded-2xl font-bold transition-all">
+            <button type="button" onClick={onCancel} className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-500 rounded-xl font-bold transition-all text-sm">
               取消
             </button>
           </div>
         </form>
       </div>
     </div>
+
   );
 }
 
@@ -3374,11 +3362,11 @@ function QuizEditor({ bookId, bookTitle, type, selIndicators, onSave, onCancel }
   useEffect(() => {
     const load = async () => {
       try {
-        const collectionPath = type === 'content' ? `books/${bookId}/content_quizzes` : `books/${bookId}/sel_quizzes`;
+        const collectionPath = type === 'content' ? `kidsbook-GitHub-to-Firebase/${bookId}/content_quizzes` : `kidsbook-GitHub-to-Firebase/${bookId}/sel_quizzes`;
         const snapshot = await getDocs(collection(db, collectionPath));
         setQs(snapshot.docs.map(doc => doc.data() as QuizQuestion));
       } catch (err) {
-        handleFirestoreError(err, OperationType.LIST, `books/${bookId}/${type}_quizzes`);
+        handleFirestoreError(err, OperationType.LIST, `kidsbook-GitHub-to-Firebase/${bookId}/${type}_quizzes`);
       } finally {
         setIsLoading(false);
       }
