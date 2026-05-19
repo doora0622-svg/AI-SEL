@@ -622,13 +622,10 @@ export default function App() {
   const handleAdminVerify = (email: string, pass: string) => {
     // Basic password validation
     if (pass === ADMIN_PASSWORD) {
-      // If email matches, we consider them admin for this session even if not signed in with that UID
-      if (email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
-        setIsAdmin(true);
-        setView('admin');
-        setShowAdminModal(false);
-        return true;
-      }
+      setIsAdmin(true);
+      setView('admin');
+      setShowAdminModal(false);
+      return true;
     }
     return false;
   };
@@ -3431,13 +3428,12 @@ function BookEditor({ book, onSave, onCancel }: { book: BookData, onSave: (b: Bo
 }
 
 function AdminModal({ onClose, onVerify }: { onClose: () => void, onVerify: (email: string, pass: string) => boolean }) {
-  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (onVerify(email, password)) {
+    if (onVerify('', password)) {
       setError(false);
     } else {
       setError(true);
@@ -3462,31 +3458,24 @@ function AdminModal({ onClose, onVerify }: { onClose: () => void, onVerify: (ema
             <Lock size={20} />
           </div>
           <h3 className="text-lg font-bold">管理者登入</h3>
-          <p className="text-[10px] text-gray-500">請輸入管理員信箱與通行密碼</p>
+          <p className="text-[10px] text-gray-500">請輸入管理員通行密碼</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3">
           <div className="space-y-2">
             <input 
-              type="email" 
-              placeholder="管理員信箱..." 
-              value={email}
-              onChange={(e) => { setEmail(e.target.value); setError(false); }}
-              autoFocus
-              className={`w-full px-4 py-2 rounded-lg bg-gray-50 border-2 outline-none transition-all text-center text-xs font-bold ${error ? 'border-red-400' : 'focus:border-purple-400 border-transparent'}`}
-            />
-            <input 
               type="password" 
-              placeholder="請輸入密碼..." 
+              placeholder="請輸入通行密碼..." 
               value={password}
               onChange={(e) => { setPassword(e.target.value); setError(false); }}
-              className={`w-full px-4 py-2 rounded-lg bg-gray-50 border-2 outline-none transition-all text-center text-sm font-bold ${error ? 'border-red-400' : 'focus:border-purple-400 border-transparent'}`}
+              autoFocus
+              className={`w-full px-4 py-2.5 rounded-lg bg-gray-50 border-2 outline-none transition-all text-center text-sm font-bold ${error ? 'border-red-400 bg-red-50 text-red-600' : 'focus:border-purple-400 border-transparent text-purple-600'}`}
             />
-            {error && <p className="text-center text-red-500 text-[10px] font-bold animate-bounce">帳密錯誤，請再試一次！</p>}
+            {error && <p className="text-center text-red-500 text-[10px] font-bold animate-bounce">密碼錯誤，請再試一次！</p>}
           </div>
           <button 
             type="submit"
-            disabled={!email || !password}
+            disabled={!password}
             className="w-full py-2.5 rounded-lg bg-purple-500 text-white text-sm font-bold shadow-lg shadow-purple-50 hover:bg-purple-600 active:scale-95 transition-all disabled:opacity-50"
           >
             登入管理中心
